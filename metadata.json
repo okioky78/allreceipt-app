@@ -1,0 +1,7 @@
+{
+  "name": "완성된 영수증등록",
+  "description": "사내 영수증 촬영 및 지출 내역 관리 어플리케이션",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
