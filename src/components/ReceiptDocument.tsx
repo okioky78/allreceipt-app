@@ -92,7 +92,7 @@ export const ReceiptDocument: React.FC<ReceiptDocumentProps> = ({ data, id }) =>
     },
     mainTable: {
       width: '100%',
-      maxWidth: '650px',
+      maxWidth: '730px',
       borderCollapse: 'collapse',
       border: '2px solid #18181b',
       margin: '0 auto 50px auto',
@@ -100,47 +100,48 @@ export const ReceiptDocument: React.FC<ReceiptDocumentProps> = ({ data, id }) =>
     tableLabel: {
       border: '1px solid #18181b',
       backgroundColor: '#fafafa',
-      padding: '15px',
+      padding: '12px',
       fontWeight: 'bold',
       textAlign: 'center',
-      width: '130px',
+      width: '100px',
+      fontSize: '14px',
     },
     tableValue: {
       border: '1px solid #18181b',
-      padding: '15px',
+      padding: '12px',
       fontWeight: '500',
-      fontSize: '16px',
+      fontSize: '15px',
+      width: '180px',
     },
     amountValue: {
       border: '1px solid #18181b',
-      padding: '15px',
+      padding: '12px',
       fontWeight: 'bold',
       color: '#2563eb',
-      fontSize: '22px',
+      fontSize: '20px',
+      width: '180px',
     },
     receiptSection: {
-      marginTop: 'auto',
+      marginTop: '20px',
       display: 'flex',
-      justifyContent: 'flex-end',
+      flexDirection: 'column',
+      alignItems: 'center',
       width: '100%',
     },
     receiptBox: {
-      width: '320px',
-      border: '1px solid #e4e4e7',
-      borderRadius: '12px',
-      padding: '15px',
-      backgroundColor: '#fafafa',
+      width: '100%',
+      maxWidth: '730px',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
     },
     receiptLabel: {
-      fontSize: '11px',
+      fontSize: '24px',
       color: '#a1a1aa',
-      marginBottom: '10px',
-      textTransform: 'uppercase',
+      marginBottom: '20px',
       letterSpacing: '0.1em',
       fontWeight: 'bold',
+      textAlign: 'center',
     },
     footer: {
       marginTop: '40px',
@@ -203,30 +204,24 @@ export const ReceiptDocument: React.FC<ReceiptDocumentProps> = ({ data, id }) =>
           <tr>
             <td style={styles.tableLabel}>사업장</td>
             <td style={styles.tableValue}>{data.business_unit}</td>
-          </tr>
-          <tr>
-            <td style={styles.tableLabel}>사용 일자</td>
-            <td style={styles.tableValue}>{data.date}</td>
-          </tr>
-          <tr>
-            <td style={styles.tableLabel}>사용 분류</td>
-            <td style={styles.tableValue}>{data.payment_method}</td>
-          </tr>
-          <tr>
-            <td style={styles.tableLabel}>사용자</td>
-            <td style={styles.tableValue}>{data.user}</td>
-          </tr>
-          <tr>
             <td style={styles.tableLabel}>사용 금액</td>
             <td style={styles.amountValue}>₩{(data.amount || 0).toLocaleString()}</td>
           </tr>
           <tr>
+            <td style={styles.tableLabel}>사용 일자</td>
+            <td style={styles.tableValue}>{data.date}</td>
             <td style={styles.tableLabel}>사용처(상호)</td>
             <td style={styles.tableValue}>{data.place}</td>
           </tr>
           <tr>
-            <td style={{ ...styles.tableLabel, height: '100px' }}>사용 용도</td>
-            <td style={{ ...styles.tableValue, verticalAlign: 'middle' }}>{data.usage_purpose}</td>
+            <td style={styles.tableLabel}>사용 분류</td>
+            <td style={styles.tableValue}>{data.payment_method}</td>
+            <td rowSpan={2} style={styles.tableLabel}>사용 용도</td>
+            <td rowSpan={2} style={{ ...styles.tableValue, verticalAlign: 'middle' }}>{data.usage_purpose}</td>
+          </tr>
+          <tr>
+            <td style={styles.tableLabel}>사용자</td>
+            <td style={styles.tableValue}>{data.user}</td>
           </tr>
         </tbody>
       </table>
@@ -236,7 +231,7 @@ export const ReceiptDocument: React.FC<ReceiptDocumentProps> = ({ data, id }) =>
         {data.image_url && (
           <div style={styles.receiptBox}>
             <p style={styles.receiptLabel}>실물 영수증 증빙</p>
-            <div style={{ width: '100%', backgroundColor: '#ffffff', borderRadius: '8px', overflow: 'hidden', border: '1px solid #f4f4f5' }}>
+            <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden' }}>
               <img 
                 src={data.image_url} 
                 alt="Receipt" 

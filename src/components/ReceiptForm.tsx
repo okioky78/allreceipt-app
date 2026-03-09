@@ -3,7 +3,7 @@ import { BUSINESS_UNITS, PAYMENT_METHODS, Receipt } from '../constants';
 import { storageService } from '../services/storageService';
 import { supabaseService } from '../services/supabaseService';
 import { Save, RotateCcw, FileText, Download, Calendar as CalendarIcon, Image as ImageIcon, CloudUpload, Loader2 } from 'lucide-react';
-import { domToJpeg } from 'modern-screenshot';
+import html2canvas from 'html2canvas';
 import { ReceiptDocument } from './ReceiptDocument';
 
 interface ReceiptFormProps {
@@ -30,6 +30,7 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ initialData, onSave, o
   const [generatedDataUrl, setGeneratedDataUrl] = useState<string | null>(null);
   const [generatedFilename, setGeneratedFilename] = useState<string | null>(null);
   const documentRef = useRef<HTMLDivElement>(null);
+  const downloadLinkRef = useRef<HTMLAnchorElement>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -40,17 +41,31 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ initialData, onSave, o
   };
 
   const generateAndDownload = async () => {
-    if (!documentRef.current) return null;
+    if (!documentRef.current || !documentRef.current.isConnected) {
+      console.error('Capture element not found or not connected to DOM');
+      return null;
+    }
     
     try {
-      // Wait for any pending renders to settle
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Ensure DOM is stable before capture
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      // Additional safety delay for font/image loading
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const dataUrl = await domToJpeg(documentRef.current, {
-        quality: 0.8,
-        scale: 1, // Changed from 1.5 to 1 as requested
+      const canvas = await html2canvas(documentRef.current, {
+        useCORS: true,
+        allowTaint: true,
         backgroundColor: '#ffffff',
+        scale: 2,
+        logging: false,
+        onclone: (clonedDoc) => {
+          // Ensure cloned element is visible for capture if needed
+          const el = clonedDoc.getElementById('capture-area');
+          if (el) el.style.opacity = '1';
+        }
       });
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
       
       const now = new Date();
       const timeStr = now.getHours().toString().padStart(2, '0') + 
@@ -77,13 +92,12 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ initialData, onSave, o
       setGeneratedDataUrl(dataUrl);
       setGeneratedFilename(filename);
 
-      // Download
-      const link = document.createElement('a');
-      link.download = filename;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Download using ref to avoid direct DOM manipulation
+      if (downloadLinkRef.current) {
+        downloadLinkRef.current.href = dataUrl;
+        downloadLinkRef.current.download = filename;
+        downloadLinkRef.current.click();
+      }
 
       return dataUrl;
     } catch (error: any) {
@@ -109,7 +123,7 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ initialData, onSave, o
       alert(`슈퍼베이스 업로드 성공: ${generatedFilename}`);
     } catch (uploadError: any) {
       console.error('Supabase upload failed:', uploadError);
-      alert(`슈퍼베이스 업로드 실패: ${uploadError.message || '알 수 없는 오류'}\n\n폴더(Bucket) 이름이 'receipts'인지, 그리고 권한(Policy) 설정이 완료되었는지 확인해 주세요.`);
+      alert(`슈퍼베이스 업로드 실패: ${uploadError.message || '알 수 없는 오류'}\n\n폴더(Bucket) 이름이 'allreceipt'인지, 그리고 권한(Policy) 설정이 완료되었는지 확인해 주세요.`);
     } finally {
       setIsUploading(false);
     }
@@ -375,15 +389,14 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ initialData, onSave, o
 
       <div 
         style={{ 
-          position: 'fixed',
-          left: '0',
-          top: '0',
+          position: 'absolute',
+          left: '-9999px',
+          top: '-9999px',
           width: '850px',
           height: '1200px',
           zIndex: -1000,
           pointerEvents: 'none',
           overflow: 'hidden',
-          opacity: 0.01 // Nearly invisible but still "rendered" for the library
         }}
       >
         <div 
@@ -396,6 +409,8 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({ initialData, onSave, o
           <ReceiptDocument data={formData} />
         </div>
       </div>
+      {/* Hidden download link for safe downloading */}
+      <a ref={downloadLinkRef} style={{ display: 'none' }} aria-hidden="true" />
     </div>
   );
 };

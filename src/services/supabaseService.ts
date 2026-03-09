@@ -37,7 +37,8 @@ export const supabaseService = {
         .from('allreceipt')
         .upload(filename, blob, {
           contentType: 'image/jpeg',
-          cacheControl: '3600'
+          cacheControl: '3600',
+          upsert: true
         });
 
       if (error) {

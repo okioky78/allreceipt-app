@@ -1,7 +1,7 @@
 /**
  * Optimizes an image by resizing and compressing it to improve API performance.
  */
-export async function optimizeImage(base64: string, maxWidth = 1200, quality = 0.7): Promise<string> {
+export async function optimizeImage(base64: string, maxWidth = 2000, quality = 0.9): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = base64;
